@@ -1,1 +1,8 @@
 .claude/
+
+# 빌드 도구 / 읽기 가능한 마스터 (배포 저장소에는 난독화된 index.html만 올린다)
+index.dev.html
+build.js
+node_modules/
+package.json
+package-lock.json
