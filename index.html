@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>오목 · OMOK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg-0:#0e0b08;
+    --bg-1:#1a1410;
+    --bg-2:#241a12;
+    --ink:#1c130a;
+    --gold:#c9a35b;
+    --gold-bright:#e8c98a;
+    --paper:#ece0c8;
+    --paper-dim:#b9a988;
+    --black-stone-rim:#000;
+    --shadow:rgba(0,0,0,.55);
+    --line:#2a1b0d;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Gowun Batang",serif;
+    color:var(--paper);
+    background:
+      radial-gradient(120% 90% at 20% -10%, #2a2017 0%, rgba(42,32,23,0) 55%),
+      radial-gradient(140% 120% at 110% 120%, #1c2620 0%, rgba(28,38,32,0) 50%),
+      linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* hanji paper grain over the ambient background */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  .wrap{
+    position:relative;z-index:1;
+    max-width:1180px;margin:0 auto;
+    padding:clamp(18px,3.5vw,48px);
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 320px;
+    grid-template-areas:"head head" "board panel";
+    gap:clamp(20px,3vw,46px);
+    align-items:start;
+  }
+  @media (max-width:880px){
+    .wrap{grid-template-columns:1fr;grid-template-areas:"head" "board" "panel";}
+  }
+
+  /* ---------- header ---------- */
+  header{grid-area:head;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .brand{display:flex;align-items:baseline;gap:18px}
+  .brand h1{
+    font-weight:700;letter-spacing:.18em;
+    font-size:clamp(34px,5.4vw,62px);
+    line-height:.9;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold) 55%,#8a6a32);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 1px 0 rgba(0,0,0,.4);
+  }
+  .brand .sub{
+    font-family:"Cormorant Garamond",serif;font-style:italic;
+    font-size:clamp(15px,2vw,21px);color:var(--paper-dim);letter-spacing:.32em;
+    text-transform:uppercase;
+  }
+  .tagline{font-size:13px;color:var(--paper-dim);letter-spacing:.04em;max-width:300px;text-align:right;line-height:1.6}
+
+  /* ---------- board ---------- */
+  .board-area{grid-area:board;display:flex;justify-content:center}
+  .board-stage{
+    position:relative;width:100%;max-width:660px;aspect-ratio:1/1;
+    border-radius:10px;
+    /* the thick wooden body: stacked edges to fake the height of a real kaya board */
+    padding:0;
+    box-shadow:
+      0 2px 0 #b98a4e,
+      0 10px 0 #7c5526,
+      0 16px 0 #5f3f1b,
+      0 22px 0 #43290f,
+      0 40px 60px -10px rgba(0,0,0,.75),
+      0 8px 20px rgba(0,0,0,.5);
+    transform:perspective(1700px) rotateX(2deg);
+    transform-origin:center 80%;
+  }
+  .board-stage canvas{
+    position:absolute;inset:0;width:100%;height:100%;
+    border-radius:10px;display:block;
+  }
+  .layer{position:absolute;inset:0;border-radius:10px}
+  #interact{cursor:pointer;z-index:5}
+  #stones{pointer-events:none;z-index:4}
+
+  .stone{
+    position:absolute;width:5.9%;aspect-ratio:1/1;border-radius:50%;
+    transform:translate(-50%,-50%);
+    will-change:transform;
+  }
+  /* glossy black slate stone */
+  .stone.b{
+    background:
+      radial-gradient(circle at 36% 30%, rgba(255,255,255,.92) 0%, rgba(255,255,255,.18) 6%, rgba(120,120,124,.25) 13%, rgba(40,40,44,.2) 26%, rgba(0,0,0,0) 40%),
+      radial-gradient(circle at 62% 74%, #3a3a40 0%, #16161a 30%, #050506 70%, #000 100%);
+    box-shadow:
+      inset 0 -3px 6px rgba(0,0,0,.6),
+      inset 2px 3px 5px rgba(255,255,255,.12),
+      2px 7px 9px -2px var(--shadow),
+      1px 2px 3px rgba(0,0,0,.5);
+  }
+  /* translucent clamshell white stone */
+  .stone.w{
+    background:
+      radial-gradient(circle at 35% 28%, #ffffff 0%, #fdfbf6 18%, #f1e9da 46%, #ddd0bb 74%, #c3b193 100%),
+      radial-gradient(circle at 70% 80%, rgba(120,90,50,.18), rgba(120,90,50,0) 55%);
+    box-shadow:
+      inset 0 -3px 7px rgba(150,120,80,.5),
+      inset 2px 3px 6px rgba(255,255,255,.9),
+      2px 7px 9px -2px var(--shadow),
+      1px 2px 3px rgba(0,0,0,.4);
+  }
+  /* faint clamshell fan lines on white stones */
+  .stone.w::after{
+    content:"";position:absolute;inset:6%;border-radius:50%;
+    background:repeating-conic-gradient(from 200deg at 50% 120%, rgba(150,120,80,.05) 0deg 2deg, rgba(150,120,80,0) 2deg 6deg);
+    -webkit-mask:radial-gradient(circle at 50% 50%, #000 60%, transparent 100%);
+            mask:radial-gradient(circle at 50% 50%, #000 60%, transparent 100%);
+    opacity:.8;
+  }
+  .stone.drop{animation:drop .26s cubic-bezier(.18,.9,.32,1.3)}
+  @keyframes drop{
+    0%{transform:translate(-50%,-58%) scale(.42);opacity:0}
+    60%{transform:translate(-50%,-50%) scale(1.07)}
+    100%{transform:translate(-50%,-50%) scale(1)}
+  }
+  /* last-move marker */
+  .stone.last::before{
+    content:"";position:absolute;left:50%;top:50%;width:22%;aspect-ratio:1;
+    transform:translate(-50%,-50%);border-radius:50%;
+    box-shadow:0 0 0 1.5px rgba(255,255,255,.85),0 0 6px rgba(255,255,255,.5);
+  }
+  .stone.b.last::before{box-shadow:0 0 0 1.5px rgba(255,255,255,.7),0 0 6px rgba(255,255,255,.35)}
+  .stone.w.last::before{box-shadow:0 0 0 1.5px rgba(40,20,0,.55)}
+  /* winning stones glow */
+  .stone.win{animation:winpulse 1s ease-in-out infinite;z-index:6}
+  @keyframes winpulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(201,163,91,.0),2px 7px 9px -2px var(--shadow)}
+    50%{box-shadow:0 0 14px 4px rgba(232,201,138,.85),2px 7px 9px -2px var(--shadow)}
+  }
+  /* hover ghost */
+  .ghost{position:absolute;width:5.9%;aspect-ratio:1/1;border-radius:50%;transform:translate(-50%,-50%);
+    pointer-events:none;z-index:3;opacity:0;transition:opacity .12s}
+  .ghost.show{opacity:.42}
+  .ghost.b{background:radial-gradient(circle at 38% 32%,#444,#000)}
+  .ghost.w{background:radial-gradient(circle at 38% 32%,#fff,#cdbfa6)}
+
+  /* ---------- side panel ---------- */
+  .panel{grid-area:panel;display:flex;flex-direction:column;gap:16px}
+  .card{
+    background:linear-gradient(160deg,rgba(46,36,26,.92),rgba(26,20,14,.94));
+    border:1px solid rgba(201,163,91,.22);
+    border-radius:14px;padding:18px 18px 20px;
+    box-shadow:0 18px 40px -20px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.04);
+    position:relative;
+  }
+  .card h2{
+    font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);
+    font-family:"Cormorant Garamond",serif;font-weight:600;margin-bottom:14px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .card h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(201,163,91,.4),transparent)}
+
+  /* turn indicator */
+  .turnbox{display:flex;align-items:center;gap:14px}
+  .turn-stone{width:46px;height:46px;border-radius:50%;flex:0 0 auto;transition:transform .3s}
+  .turn-stone.b{background:radial-gradient(circle at 36% 30%,#5a5a60,#16161a 40%,#000 100%);box-shadow:inset 0 -2px 4px rgba(0,0,0,.6),inset 2px 2px 3px rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,.5)}
+  .turn-stone.w{background:radial-gradient(circle at 35% 28%,#fff,#efe6d5 50%,#cbb99c);box-shadow:inset 0 -2px 4px rgba(150,120,80,.5),inset 2px 2px 4px rgba(255,255,255,.9),0 3px 6px rgba(0,0,0,.4)}
+  .turn-info .who{font-size:18px;font-weight:700;color:var(--paper)}
+  .turn-info .meta{font-size:12px;color:var(--paper-dim);letter-spacing:.05em;margin-top:2px}
+  .thinking .turn-stone{animation:bob .7s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-5px) scale(1.04)}}
+
+  /* segmented toggles */
+  .seg{display:flex;background:rgba(0,0,0,.32);border-radius:10px;padding:4px;gap:4px;border:1px solid rgba(201,163,91,.12)}
+  .seg button{
+    flex:1;border:0;background:transparent;color:var(--paper-dim);
+    font-family:"Gowun Batang",serif;font-size:14px;padding:9px 6px;border-radius:7px;cursor:pointer;
+    transition:.18s;letter-spacing:.02em;
+  }
+  .seg button:hover{color:var(--paper)}
+  .seg button.on{
+    background:linear-gradient(180deg,#3a2c1a,#2a2012);
+    color:var(--gold-bright);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 6px rgba(0,0,0,.4);
+    border:1px solid rgba(201,163,91,.3);
+  }
+  .field{margin-top:14px}
+  .field:first-child{margin-top:0}
+  .field > label{display:block;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:7px;font-family:"Cormorant Garamond",serif}
+  .field.hide{display:none}
+
+  .btn-row{display:flex;gap:10px}
+  .btn{
+    flex:1;border:1px solid rgba(201,163,91,.28);
+    background:linear-gradient(180deg,rgba(58,44,26,.9),rgba(34,26,16,.95));
+    color:var(--paper);font-family:"Gowun Batang",serif;font-size:14px;
+    padding:11px 10px;border-radius:9px;cursor:pointer;transition:.16s;letter-spacing:.03em;
+  }
+  .btn:hover{border-color:var(--gold);color:var(--gold-bright);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:linear-gradient(180deg,#7a5a2c,#5a3f1c);border-color:rgba(232,201,138,.5);color:var(--gold-bright);font-weight:700}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stats{display:flex;justify-content:space-between;gap:8px;text-align:center}
+  .stat{flex:1}
+  .stat .n{font-family:"Cormorant Garamond",serif;font-size:30px;color:var(--gold-bright);line-height:1}
+  .stat .l{font-size:11px;color:var(--paper-dim);letter-spacing:.12em;margin-top:5px;text-transform:uppercase}
+
+  .soundtoggle{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--paper-dim)}
+  .switch{width:42px;height:24px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(201,163,91,.2);position:relative;cursor:pointer;transition:.2s}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--paper-dim);transition:.2s}
+  .switch.on{background:linear-gradient(180deg,#7a5a2c,#5a3f1c)}
+  .switch.on::after{left:21px;background:var(--gold-bright)}
+
+  /* win overlay */
+  .overlay{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at center,rgba(10,8,5,.4),rgba(10,8,5,.82));
+    opacity:0;pointer-events:none;transition:opacity .4s;z-index:10}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .win-card{
+    text-align:center;padding:34px 44px;border-radius:16px;
+    background:linear-gradient(160deg,rgba(44,34,22,.96),rgba(24,18,12,.98));
+    border:1px solid rgba(201,163,91,.4);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.07);
+    transform:scale(.85) translateY(10px);transition:transform .45s cubic-bezier(.2,.9,.3,1.3);
+  }
+  .overlay.show .win-card{transform:scale(1) translateY(0)}
+  .win-card .crown{font-size:34px;margin-bottom:6px}
+  .win-card h3{font-size:30px;color:var(--gold-bright);font-weight:700;letter-spacing:.06em;margin-bottom:6px}
+  .win-card p{color:var(--paper-dim);font-size:14px;margin-bottom:20px}
+  .footer{grid-area:auto;text-align:center;color:var(--paper-dim);font-size:12px;letter-spacing:.06em;opacity:.7;margin-top:6px}
+
+  /* winning line drawn through the five stones */
+  .winline{
+    position:absolute;height:1.7%;border-radius:99px;transform-origin:center;
+    background:linear-gradient(90deg,rgba(232,201,138,0),rgba(232,201,138,.95) 12%,#fff 50%,rgba(232,201,138,.95) 88%,rgba(232,201,138,0));
+    box-shadow:0 0 14px 3px rgba(232,201,138,.8);
+    z-index:5;pointer-events:none;opacity:0;animation:lineIn .5s ease forwards;
+  }
+  @keyframes lineIn{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:blur(0)}}
+  /* result banner over the turn card while the line shows */
+  .turn-info .who.win-flag{color:var(--gold-bright)}
+
+  /* ---------- 오목 교실 button ---------- */
+  .btn-school{
+    display:flex;align-items:center;gap:14px;text-align:left;width:100%;cursor:pointer;
+    border:1px solid rgba(201,163,91,.3);border-radius:14px;padding:15px 18px;
+    background:linear-gradient(160deg,rgba(52,40,24,.92),rgba(28,21,13,.95));
+    color:var(--paper);font-family:"Gowun Batang",serif;transition:.18s;
+    box-shadow:0 18px 40px -22px rgba(0,0,0,.8);
+  }
+  .btn-school:hover{border-color:var(--gold);transform:translateY(-1px);box-shadow:0 22px 44px -20px rgba(0,0,0,.85)}
+  .btn-school .ic{font-size:24px;filter:saturate(.85)}
+  .btn-school b{display:block;font-size:15px;color:var(--gold-bright);letter-spacing:.04em}
+  .btn-school i{display:block;font-style:normal;font-size:12px;color:var(--paper-dim);margin-top:3px}
+
+  /* ---------- 오목 교실 modal ---------- */
+  .school{
+    position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    padding:clamp(14px,3vw,40px);
+    background:radial-gradient(circle at center,rgba(8,6,4,.72),rgba(8,6,4,.92));
+    opacity:0;pointer-events:none;transition:opacity .35s;
+  }
+  .school.show{opacity:1;pointer-events:auto}
+  .school-card{
+    width:min(860px,100%);max-height:90vh;display:flex;flex-direction:column;
+    background:linear-gradient(165deg,#241b12,#16100a);
+    border:1px solid rgba(201,163,91,.28);border-radius:18px;overflow:hidden;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.05);
+    transform:scale(.93) translateY(14px);transition:transform .4s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .school.show .school-card{transform:none}
+  .school-head{padding:26px 30px 18px;border-bottom:1px solid rgba(201,163,91,.16);position:relative;
+    background:radial-gradient(120% 140% at 0% 0%,rgba(201,163,91,.1),transparent 60%)}
+  .school-head h2{font-size:26px;font-weight:700;color:var(--gold-bright);letter-spacing:.12em}
+  .school-head p{color:var(--paper-dim);font-size:13px;margin-top:5px;letter-spacing:.03em}
+  .school-close{position:absolute;top:20px;right:22px;width:34px;height:34px;border-radius:50%;
+    border:1px solid rgba(201,163,91,.3);background:rgba(0,0,0,.3);color:var(--paper);
+    font-size:16px;cursor:pointer;transition:.16s;line-height:1}
+  .school-close:hover{border-color:var(--gold);color:var(--gold-bright);transform:rotate(90deg)}
+  .school-tabs{display:flex;gap:6px;padding:16px 30px 0}
+  .school-tabs button{
+    border:1px solid transparent;background:transparent;color:var(--paper-dim);
+    font-family:"Gowun Batang",serif;font-size:15px;padding:10px 20px;border-radius:10px 10px 0 0;
+    cursor:pointer;transition:.16s;letter-spacing:.06em;position:relative;
+  }
+  .school-tabs button:hover{color:var(--paper)}
+  .school-tabs button.on{color:var(--gold-bright);background:rgba(201,163,91,.1);border-color:rgba(201,163,91,.22);border-bottom-color:transparent}
+  .school-tabs button .lvl{display:block;font-size:10px;color:var(--paper-dim);letter-spacing:.18em;font-family:"Cormorant Garamond",serif;text-transform:uppercase}
+  .school-body{padding:22px 30px 30px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+  .school-body::-webkit-scrollbar{width:9px}
+  .school-body::-webkit-scrollbar-thumb{background:rgba(201,163,91,.3);border-radius:9px}
+
+  .lesson{display:grid;grid-template-columns:190px 1fr;gap:22px;align-items:center;
+    padding:18px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(201,163,91,.12)}
+  .lesson .dgm{width:100%;height:auto;border-radius:10px;display:block;
+    box-shadow:0 8px 22px -8px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.15)}
+  .lesson-txt h4{font-size:18px;color:var(--paper);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:9px}
+  .lesson-txt h4 .tag{font-size:10px;letter-spacing:.14em;color:#16100a;background:var(--gold);
+    padding:3px 8px;border-radius:99px;font-family:"Cormorant Garamond",serif;font-weight:700;text-transform:uppercase}
+  .lesson-txt p{color:var(--paper-dim);font-size:14px;line-height:1.78}
+  .lesson-txt p b{color:var(--gold-bright);font-weight:700}
+  .lesson-tip{margin-top:13px;font-size:12.5px;color:#f0dcb0;line-height:1.65;
+    background:rgba(201,163,91,.1);border-left:3px solid var(--gold);padding:9px 14px;border-radius:0 8px 8px 0}
+  .lesson-tip b{color:#16100a;background:var(--gold);font-family:"Cormorant Garamond",serif;font-weight:700;
+    font-size:10px;letter-spacing:.16em;padding:2px 7px;border-radius:99px;margin-right:8px;text-transform:uppercase;vertical-align:1px}
+
+  .school-intro{font-size:14px;color:var(--paper);line-height:1.85;
+    background:radial-gradient(120% 160% at 0 0,rgba(201,163,91,.12),rgba(201,163,91,.04));
+    border:1px solid rgba(201,163,91,.2);border-radius:13px;padding:16px 20px}
+  .school-intro b{color:var(--gold-bright);font-weight:700}
+  .school-intro .step{display:inline-block;font-family:"Cormorant Garamond",serif;font-style:italic;
+    color:var(--gold);letter-spacing:.1em;font-size:13px;margin-bottom:4px}
+
+  .glossary{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .term{background:rgba(255,255,255,.025);border:1px solid rgba(201,163,91,.13);border-radius:12px;padding:14px 16px}
+  .term strong{display:block;color:var(--gold-bright);font-weight:700;font-size:15px;margin-bottom:5px;letter-spacing:.01em}
+  .term span{display:block;color:var(--paper-dim);font-size:12.5px;line-height:1.62}
+  .term span em{color:#dcc89c;font-style:normal;font-weight:700}
+  @media (max-width:620px){
+    .lesson{grid-template-columns:1fr;gap:14px}
+    .lesson .dgm{max-width:240px;margin:0 auto}
+    .glossary{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>오목</h1>
+        <div>
+          <div class="sub">Omok</div>
+        </div>
+      </div>
+      <p class="tagline">신가야(新榧) 원목 바둑판 위에서 — 흑백 다섯 점을 잇는 자가 이긴다.</p>
+    </header>
+
+    <div class="board-area">
+      <div class="board-stage" id="stage">
+        <canvas id="board" width="1000" height="1000"></canvas>
+        <div class="layer" id="stones"></div>
+        <div class="ghost" id="ghost"></div>
+        <div class="layer" id="interact"></div>
+        <div class="overlay" id="overlay">
+          <div class="win-card">
+            <div class="crown">🏆</div>
+            <h3 id="win-title">흑 승리</h3>
+            <p id="win-sub">다섯 점이 이어졌습니다</p>
+            <button class="btn primary" id="win-restart">다시 두기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="card">
+        <h2>차례</h2>
+        <div class="turnbox" id="turnbox">
+          <div class="turn-stone b" id="turn-stone"></div>
+          <div class="turn-info">
+            <div class="who" id="turn-who">흑돌 차례</div>
+            <div class="meta" id="turn-meta">당신이 둘 차례입니다</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>대국 설정</h2>
+        <div class="field">
+          <label>대전 방식</label>
+          <div class="seg" id="mode-seg">
+            <button data-mode="pvp" class="on">1 : 1 대국</button>
+            <button data-mode="ai">AI 대전</button>
+          </div>
+        </div>
+        <div class="field hide" id="field-level">
+          <label>AI 기력</label>
+          <div class="seg" id="level-seg">
+            <button data-level="1">초급</button>
+            <button data-level="2" class="on">중급</button>
+            <button data-level="3">고급</button>
+          </div>
+        </div>
+        <div class="field hide" id="field-color">
+          <label>내 돌</label>
+          <div class="seg" id="color-seg">
+            <button data-color="1" class="on">흑 (선공)</button>
+            <button data-color="2">백 (후공)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>기록</h2>
+        <div class="stats">
+          <div class="stat"><div class="n" id="stat-move">0</div><div class="l">총 수</div></div>
+          <div class="stat"><div class="n" id="stat-b">0</div><div class="l">흑</div></div>
+          <div class="stat"><div class="n" id="stat-w">0</div><div class="l">백</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="btn-row">
+          <button class="btn" id="btn-undo">무르기</button>
+          <button class="btn primary" id="btn-restart">새 대국</button>
+        </div>
+        <div class="soundtoggle" style="margin-top:16px">
+          <span>돌 두는 소리</span>
+          <div class="switch on" id="sound-switch"></div>
+        </div>
+      </div>
+      <button class="btn-school" id="btn-school">
+        <span class="ic">📖</span>
+        <span><b>오목 교실</b><i>기초부터 고급까지 한 수씩 강해지기</i></span>
+      </button>
+
+      <div class="footer">오목 · 다섯 점을 가장 먼저 이으세요</div>
+    </aside>
+  </div>
+
+  <!-- 오목 교실 -->
+  <div class="school" id="school">
+    <div class="school-card">
+      <div class="school-head">
+        <h2>오목 교실</h2>
+        <p>규칙과 승리 조건부터 쌍삼·사삼 같은 고급 전술까지, 그림으로 익히는 오목 강의</p>
+        <button class="school-close" id="school-close">✕</button>
+      </div>
+      <div class="school-tabs" id="school-tabs">
+        <button data-t="basic" class="on"><span class="lvl">Lv.1</span>기초</button>
+        <button data-t="mid"><span class="lvl">Lv.2</span>중급</button>
+        <button data-t="adv"><span class="lvl">Lv.3</span>고급</button>
+        <button data-t="terms"><span class="lvl">Ref</span>용어 사전</button>
+      </div>
+      <div class="school-body" id="school-body"></div>
+    </div>
+  </div>
+
+<script>
+(()=>{
+  "use strict";
+  const N = 15;                 // 15 x 15 바둑판
+  const PAD = 0.05;             // 보드 가장자리 여백(비율)
+  const CELL = (1 - 2*PAD)/(N-1);
+  const STAR = [3,7,11];        // 화점 인덱스
+
+  const board = new Array(N*N).fill(0); // 0 빈칸, 1 흑, 2 백
+  const idx = (r,c)=>r*N+c;
+
+  const state = {
+    mode:'pvp',     // 'pvp' | 'ai'
+    level:2,
+    playerColor:1,  // AI모드에서 사람이 잡는 돌
+    current:1,      // 현재 차례 (흑 선공)
+    over:false,
+    sound:true,
+    busy:false,     // AI 사고 중 입력 잠금
+    history:[],     // {r,c,color}
+  };
+
+  // ---------- DOM ----------
+  const stage   = document.getElementById('stage');
+  const stonesEl= document.getElementById('stones');
+  const ghost   = document.getElementById('ghost');
+  const interact= document.getElementById('interact');
+  const overlay = document.getElementById('overlay');
+
+  // =====================================================================
+  //  1. 사실적인 원목 바둑판 렌더링 (절차적 나뭇결 + 격자)
+  // =====================================================================
+  function drawBoard(){
+    const cv = document.getElementById('board');
+    const ctx = cv.getContext('2d');
+    const S = 1000;
+    let seed = 20240617;
+    const rnd = ()=> (seed = (seed*1664525 + 1013904223) & 0x7fffffff) / 0x7fffffff;
+
+    // 바탕: 따뜻한 카야 원목 색
+    const g = ctx.createLinearGradient(0,0,S*0.25,S);
+    g.addColorStop(0,'#e6c486');
+    g.addColorStop(0.5,'#dcb472');
+    g.addColorStop(1,'#cfa15e');
+    ctx.fillStyle = g; ctx.fillRect(0,0,S,S);
+
+    // 굵은 결(cathedral grain) — 부드러운 세로 밴드
+    for(let b=0;b<5;b++){
+      const cx = rnd()*S;
+      const w  = 120 + rnd()*220;
+      const grad = ctx.createLinearGradient(cx-w/2,0,cx+w/2,0);
+      grad.addColorStop(0,'rgba(150,104,52,0)');
+      grad.addColorStop(0.5,`rgba(${120+rnd()*30|0},${80+rnd()*20|0},40,${0.10+rnd()*0.08})`);
+      grad.addColorStop(1,'rgba(150,104,52,0)');
+      ctx.fillStyle = grad; ctx.fillRect(cx-w/2,0,w,S);
+    }
+
+    // 고운 세로 직결(masame) — 고급 바둑판 특유의 곧은 결
+    ctx.lineWidth = 1;
+    for(let i=0;i<260;i++){
+      const x0 = rnd()*S;
+      const amp = 4 + rnd()*14;
+      const phase = rnd()*Math.PI*2;
+      const freq = 0.6 + rnd()*1.2;
+      const dark = rnd();
+      const col = dark<0.5
+        ? `rgba(${150+rnd()*40|0},${108+rnd()*26|0},${56+rnd()*20|0},${0.05+rnd()*0.10})`
+        : `rgba(${238+rnd()*16|0},${205+rnd()*20|0},${150+rnd()*24|0},${0.04+rnd()*0.08})`;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 0.6 + rnd()*1.8;
+      ctx.beginPath();
+      for(let y=0;y<=S;y+=14){
+        const x = x0 + Math.sin(y/S*Math.PI*freq + phase)*amp + (y/S)*(rnd()*6-3);
+        y===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // 미세 노이즈(나무 질감)
+    const img = ctx.getImageData(0,0,S,S);
+    const d = img.data;
+    for(let i=0;i<d.length;i+=4){
+      const n = (rnd()-0.5)*18;
+      d[i]+=n; d[i+1]+=n*0.9; d[i+2]+=n*0.7;
+    }
+    ctx.putImageData(img,0,0);
+
+    // 상단 광택 + 가장자리 비네팅
+    const sheen = ctx.createLinearGradient(0,0,0,S);
+    sheen.addColorStop(0,'rgba(255,248,230,.22)');
+    sheen.addColorStop(0.12,'rgba(255,248,230,0)');
+    ctx.fillStyle = sheen; ctx.fillRect(0,0,S,S);
+    const vg = ctx.createRadialGradient(S/2,S/2,S*0.32,S/2,S/2,S*0.72);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(60,34,10,.30)');
+    ctx.fillStyle = vg; ctx.fillRect(0,0,S,S);
+
+    // ---- 격자선 (옻칠 느낌의 진한 갈흑색) ----
+    const p = PAD*S, step = CELL*S;
+    ctx.strokeStyle = 'rgba(42,27,13,.92)';
+    ctx.lineCap='round';
+    // 본선
+    for(let i=0;i<N;i++){
+      const t = p + i*step;
+      ctx.lineWidth = (i===0||i===N-1)?2.6:1.4;
+      ctx.beginPath(); ctx.moveTo(p,t); ctx.lineTo(S-p,t); ctx.stroke();      // 가로
+      ctx.beginPath(); ctx.moveTo(t,p); ctx.lineTo(t,S-p); ctx.stroke();      // 세로
+    }
+    // 선의 미세한 입체 하이라이트
+    ctx.strokeStyle='rgba(255,240,210,.10)';ctx.lineWidth=0.8;
+    for(let i=0;i<N;i++){const t=p+i*step+0.9;
+      ctx.beginPath();ctx.moveTo(p,t);ctx.lineTo(S-p,t);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(t,p);ctx.lineTo(t,S-p);ctx.stroke();
+    }
+    // 화점
+    ctx.fillStyle='rgba(34,21,10,.95)';
+    for(const r of STAR)for(const c of STAR){
+      ctx.beginPath();ctx.arc(p+c*step,p+r*step,5.4,0,7);ctx.fill();
+    }
+  }
+  drawBoard();
+
+  // =====================================================================
+  //  2. 좌표 변환 & 돌 렌더링
+  // =====================================================================
+  const posPct = i => (PAD + i*CELL)*100;
+
+  function cellFromEvent(e){
+    const rect = interact.getBoundingClientRect();
+    const x = (e.clientX-rect.left)/rect.width;
+    const y = (e.clientY-rect.top)/rect.height;
+    const c = Math.round((x-PAD)/CELL);
+    const r = Math.round((y-PAD)/CELL);
+    if(r<0||r>=N||c<0||c>=N) return null;
+    // 가까운 교차점인지 확인(가장자리 오클릭 방지)
+    const dx = Math.abs((PAD+c*CELL)-x), dy = Math.abs((PAD+r*CELL)-y);
+    if(dx>CELL*0.5 || dy>CELL*0.5) return null;
+    return {r,c};
+  }
+
+  function renderStone(r,c,color,isNew){
+    const el = document.createElement('div');
+    el.className = 'stone ' + (color===1?'b':'w') + (isNew?' drop':'');
+    el.style.left = posPct(c)+'%';
+    el.style.top  = posPct(r)+'%';
+    el.dataset.r=r; el.dataset.c=c;
+    stonesEl.appendChild(el);
+    return el;
+  }
+
+  function refreshLastMarker(){
+    stonesEl.querySelectorAll('.stone.last').forEach(s=>s.classList.remove('last'));
+    const h = state.history[state.history.length-1];
+    if(!h) return;
+    const el = stonesEl.querySelector(`.stone[data-r="${h.r}"][data-c="${h.c}"]`);
+    if(el) el.classList.add('last');
+  }
+
+  // =====================================================================
+  //  3. 돌 두는 "딱" 소리 (WebAudio 합성)
+  // =====================================================================
+  let actx=null;
+  function clack(){
+    if(!state.sound) return;
+    try{
+      actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+      const t = actx.currentTime;
+      // 짧은 노이즈 버스트 → 나무에 부딪히는 'tok'
+      const len = 0.045, buf = actx.createBuffer(1, actx.sampleRate*len, actx.sampleRate);
+      const dat = buf.getChannelData(0);
+      for(let i=0;i<dat.length;i++) dat[i] = (Math.random()*2-1)*Math.pow(1-i/dat.length,2.5);
+      const src = actx.createBufferSource(); src.buffer=buf;
+      const bp = actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1700; bp.Q.value=0.8;
+      const ng = actx.createGain(); ng.gain.value=0.5;
+      src.connect(bp); bp.connect(ng); ng.connect(actx.destination); src.start(t);
+      // 낮은 'thump' 바디
+      const o = actx.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(190,t);
+      o.frequency.exponentialRampToValueAtTime(90,t+0.06);
+      const og = actx.createGain(); og.gain.setValueAtTime(0.4,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.09);
+      o.connect(og); og.connect(actx.destination); o.start(t); o.stop(t+0.1);
+    }catch(_){}
+  }
+
+  // =====================================================================
+  //  4. 착수 & 승부 판정
+  // =====================================================================
+  function place(r,c,color){
+    board[idx(r,c)] = color;
+    state.history.push({r,c,color});
+    renderStone(r,c,color,true);
+    clack();
+    refreshLastMarker();
+    updateStats();
+  }
+
+  const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+  function winningLine(r,c,color){
+    for(const [dr,dc] of DIRS){
+      const line=[{r,c}];
+      for(let s=1;s<5;s++){const nr=r+dr*s,nc=c+dc*s;if(nr<0||nr>=N||nc<0||nc>=N||board[idx(nr,nc)]!==color)break;line.push({r:nr,c:nc});}
+      for(let s=1;s<5;s++){const nr=r-dr*s,nc=c-dc*s;if(nr<0||nr>=N||nc<0||nc>=N||board[idx(nr,nc)]!==color)break;line.unshift({r:nr,c:nc});}
+      if(line.length>=5) return line;
+    }
+    return null;
+  }
+
+  function doMove(r,c){
+    if(state.over || state.busy || board[idx(r,c)]!==0) return;
+    const color = state.current;
+    place(r,c,color);
+    const line = winningLine(r,c,color);
+    if(line){ endGame(color,line); return; }
+    if(state.history.length===N*N){ endDraw(); return; }
+    state.current = color===1?2:1;
+    updateTurn();
+    maybeAI();
+  }
+
+  function endGame(color,line){
+    state.over = true;
+    ghost.classList.remove('show');
+
+    // 1) 마지막 돌이 놓인 직후, 이긴 다섯 점을 발광시키고 관통하는 선을 긋는다
+    line.forEach(({r,c})=>{
+      const el=stonesEl.querySelector(`.stone[data-r="${r}"][data-c="${c}"]`);
+      if(el) el.classList.add('win');
+    });
+    const a=line[0], b=line[line.length-1];
+    const x1=posPct(a.c), y1=posPct(a.r), x2=posPct(b.c), y2=posPct(b.r);
+    const dx=x2-x1, dy=y2-y1;
+    const len=Math.hypot(dx,dy);          // % 단위(정사각 보드라 가로=세로 px)
+    const ang=Math.atan2(dy,dx)*180/Math.PI;
+    const wl=document.createElement('div');
+    wl.className='winline';
+    wl.style.left=(x1+x2)/2+'%';
+    wl.style.top =(y1+y2)/2+'%';
+    wl.style.width=len+'%';
+    wl.style.transform=`translate(-50%,-50%) rotate(${ang}deg)`;
+    stonesEl.appendChild(wl);
+
+    // 2) 차례 카드에 즉시 결과를 띄워 승패를 바로 확인
+    const human = state.mode==='ai' && color!==state.playerColor;
+    const ts=document.getElementById('turn-stone');
+    ts.className='turn-stone '+(color===1?'b':'w');
+    const whoEl=document.getElementById('turn-who');
+    whoEl.classList.add('win-flag');
+    whoEl.textContent = state.mode==='ai'
+      ? (human?'AI 승리 · 패배':'당신의 승리!')
+      : (color===1?'흑돌 승리!':'백돌 승리!');
+    document.getElementById('turn-meta').textContent='다섯 점이 이어졌습니다';
+
+    // 3) 결과 카드 내용 준비 후, 잠깐 보여주고 종료 오버레이 표시
+    document.getElementById('win-title').textContent = state.mode==='ai'
+      ? (human?'패배':'승리') : (color===1?'흑 승리':'백 승리');
+    document.getElementById('win-sub').textContent =
+      state.mode==='ai' ? (human?'AI가 다섯 점을 이었습니다':'축하합니다! AI를 이겼습니다') : '다섯 점이 이어졌습니다';
+    document.querySelector('.win-card .crown').textContent = (state.mode==='ai'&&human)?'🪨':'🏆';
+    setTimeout(()=>{ overlay.classList.add('show'); }, 1300);
+  }
+  function endDraw(){
+    state.over=true;
+    document.getElementById('win-title').textContent='무승부';
+    document.getElementById('win-sub').textContent='판이 가득 찼습니다';
+    document.querySelector('.win-card .crown').textContent='🤝';
+    overlay.classList.add('show');
+  }
+
+  // =====================================================================
+  //  5. AI — 위협 패턴 기반 휴리스틱 (1수 평가 + 즉승/즉방어)
+  // =====================================================================
+  function lineScore(r,c,color,dr,dc){
+    // (r,c)에 color를 둔 상태로 그 방향 라인 평가
+    let count=1, openEnds=0, blocks=0;
+    // forward
+    let s=1,fr,fc;
+    while(true){fr=r+dr*s;fc=c+dc*s;if(fr<0||fr>=N||fc<0||fc>=N){blocks++;break;}const v=board[idx(fr,fc)];if(v===color){count++;s++;}else if(v===0){openEnds++;break;}else{blocks++;break;}}
+    s=1;
+    while(true){fr=r-dr*s;fc=c-dc*s;if(fr<0||fr>=N||fc<0||fc>=N){blocks++;break;}const v=board[idx(fr,fc)];if(v===color){count++;s++;}else if(v===0){openEnds++;break;}else{blocks++;break;}}
+    if(count>=5) return 1e8;
+    if(openEnds===0) return 0;            // 양쪽 막힘 → 무의미
+    if(count===4) return openEnds===2?1.2e6:1.6e4;
+    if(count===3) return openEnds===2?6e3:6e2;
+    if(count===2) return openEnds===2?260:60;
+    return openEnds===2?16:3;
+  }
+  function scoreAt(r,c,color){
+    let total=0;
+    for(const [dr,dc] of DIRS) total += lineScore(r,c,color,dr,dc);
+    return total;
+  }
+
+  function candidateCells(){
+    const set=new Set(), out=[];
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+      if(board[idx(r,c)]===0) continue;
+      for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){
+        const nr=r+dr,nc=c+dc;
+        if(nr<0||nr>=N||nc<0||nc>=N) continue;
+        if(board[idx(nr,nc)]!==0) continue;
+        const k=idx(nr,nc); if(set.has(k))continue; set.add(k); out.push({r:nr,c:nc});
+      }
+    }
+    if(out.length===0) out.push({r:7,c:7}); // 첫 수
+    return out;
+  }
+
+  function aiChoose(){
+    const me = state.current, opp = me===1?2:1;
+    const cells = candidateCells();
+    const center = (N-1)/2;
+    let best=[], bestVal=-1;
+    const noise = state.level===1?0.45:state.level===2?0.12:0.0;
+    for(const {r,c} of cells){
+      const atk = scoreAt(r,c,me);
+      const def = scoreAt(r,c,opp);
+      // 즉승 최우선, 그 다음 상대 즉승 방어
+      let val = atk*1.0 + def*(state.level===1?0.7:0.92);
+      val -= (Math.abs(r-center)+Math.abs(c-center))*1.2;       // 중앙 선호
+      if(noise) val *= (1 - noise/2 + Math.random()*noise);
+      if(val>bestVal+1e-6){ bestVal=val; best=[{r,c}]; }
+      else if(Math.abs(val-bestVal)<=1e-6){ best.push({r,c}); }
+    }
+    return best[Math.floor(Math.random()*best.length)];
+  }
+
+  function maybeAI(){
+    if(state.mode!=='ai' || state.over) return;
+    const aiColor = state.playerColor===1?2:1;
+    if(state.current!==aiColor) return;
+    state.busy=true;
+    document.getElementById('turnbox').classList.add('thinking');
+    document.getElementById('turn-meta').textContent='AI가 생각하는 중…';
+    const delay = 320 + Math.random()*420;
+    setTimeout(()=>{
+      const mv = aiChoose();
+      document.getElementById('turnbox').classList.remove('thinking');
+      state.busy=false;
+      if(mv && !state.over) doMove(mv.r,mv.c);
+    }, delay);
+  }
+
+  // =====================================================================
+  //  6. UI 상태 갱신
+  // =====================================================================
+  function updateTurn(){
+    const ts=document.getElementById('turn-stone');
+    ts.className='turn-stone '+(state.current===1?'b':'w');
+    const whoEl=document.getElementById('turn-who');
+    whoEl.classList.remove('win-flag');
+    whoEl.textContent = (state.current===1?'흑돌':'백돌')+' 차례';
+    let meta='두 사람이 번갈아 둡니다';
+    if(state.mode==='ai'){
+      const aiColor = state.playerColor===1?2:1;
+      meta = state.current===state.playerColor ? '당신이 둘 차례입니다' : 'AI 차례';
+    }
+    document.getElementById('turn-meta').textContent = meta;
+  }
+  function updateStats(){
+    let b=0,w=0;
+    for(const v of board){ if(v===1)b++; else if(v===2)w++; }
+    document.getElementById('stat-move').textContent=state.history.length;
+    document.getElementById('stat-b').textContent=b;
+    document.getElementById('stat-w').textContent=w;
+  }
+
+  // =====================================================================
+  //  7. 입력 (착수 + 호버 미리보기)
+  // =====================================================================
+  interact.addEventListener('click', e=>{
+    const cell = cellFromEvent(e);
+    if(!cell) return;
+    if(state.mode==='ai' && state.current!==state.playerColor) return; // AI 차례엔 입력 무시
+    doMove(cell.r,cell.c);
+  });
+  interact.addEventListener('mousemove', e=>{
+    if(state.over || state.busy){ ghost.classList.remove('show'); return; }
+    if(state.mode==='ai' && state.current!==state.playerColor){ ghost.classList.remove('show'); return; }
+    const cell = cellFromEvent(e);
+    if(!cell || board[idx(cell.r,cell.c)]!==0){ ghost.classList.remove('show'); return; }
+    ghost.className='ghost show '+(state.current===1?'b':'w');
+    ghost.style.left=posPct(cell.c)+'%';
+    ghost.style.top =posPct(cell.r)+'%';
+  });
+  interact.addEventListener('mouseleave', ()=>ghost.classList.remove('show'));
+
+  // =====================================================================
+  //  8. 컨트롤
+  // =====================================================================
+  function resetBoard(){
+    board.fill(0);
+    state.history=[];
+    state.current=1;
+    state.over=false;
+    state.busy=false;
+    stonesEl.innerHTML='';
+    ghost.classList.remove('show');
+    overlay.classList.remove('show');
+    document.querySelector('.win-card .crown').textContent='🏆';
+    document.getElementById('turnbox').classList.remove('thinking');
+    updateTurn(); updateStats();
+    maybeAI(); // 사람이 백이면 AI(흑)가 선공
+  }
+
+  document.getElementById('mode-seg').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    state.mode=b.dataset.mode;
+    document.querySelectorAll('#mode-seg button').forEach(x=>x.classList.toggle('on',x===b));
+    document.getElementById('field-level').classList.toggle('hide', state.mode!=='ai');
+    document.getElementById('field-color').classList.toggle('hide', state.mode!=='ai');
+    resetBoard();
+  });
+  document.getElementById('level-seg').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    state.level=+b.dataset.level;
+    document.querySelectorAll('#level-seg button').forEach(x=>x.classList.toggle('on',x===b));
+  });
+  document.getElementById('color-seg').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    state.playerColor=+b.dataset.color;
+    document.querySelectorAll('#color-seg button').forEach(x=>x.classList.toggle('on',x===b));
+    resetBoard();
+  });
+
+  document.getElementById('btn-restart').addEventListener('click', resetBoard);
+  document.getElementById('win-restart').addEventListener('click', resetBoard);
+
+  document.getElementById('btn-undo').addEventListener('click', ()=>{
+    if(state.busy) return;
+    const undoOne=()=>{
+      const h=state.history.pop(); if(!h) return false;
+      board[idx(h.r,h.c)]=0;
+      const el=stonesEl.querySelector(`.stone[data-r="${h.r}"][data-c="${h.c}"]`);
+      if(el) el.remove();
+      return true;
+    };
+    if(!undoOne()) return;
+    // AI 모드에서 방금 사람 수 차례로 돌아오도록 두 수 무르기
+    if(state.mode==='ai' && state.history.length>0){
+      const last=state.history[state.history.length-1];
+      if(last.color!==state.playerColor) undoOne();
+    }
+    state.over=false;
+    overlay.classList.remove('show');
+    stonesEl.querySelectorAll('.win').forEach(s=>s.classList.remove('win'));
+    state.current = state.history.length? (state.history[state.history.length-1].color===1?2:1) : 1;
+    refreshLastMarker(); updateTurn(); updateStats();
+  });
+
+  const sw=document.getElementById('sound-switch');
+  sw.addEventListener('click', ()=>{ state.sound=!state.sound; sw.classList.toggle('on',state.sound); if(state.sound) clack(); });
+
+  // =====================================================================
+  //  9. 오목 교실 — 기초 → 중급 → 고급 교육 과정
+  // =====================================================================
+  function diagram(spec){
+    const g=spec.g||9, S=300, m=S*0.1, step=(S-2*m)/(g-1), R=step*0.46;
+    const P=i=>m+i*step;
+    let s=`<svg viewBox="0 0 ${S} ${S}" class="dgm" xmlns="http://www.w3.org/2000/svg">`;
+    s+=`<defs>
+      <radialGradient id="dgb" cx="37%" cy="31%" r="72%"><stop offset="0" stop-color="#5c5c62"/><stop offset="34%" stop-color="#17171b"/><stop offset="100%" stop-color="#000"/></radialGradient>
+      <radialGradient id="dgw" cx="35%" cy="28%" r="76%"><stop offset="0" stop-color="#fff"/><stop offset="52%" stop-color="#f0e7d6"/><stop offset="100%" stop-color="#c9b793"/></radialGradient>
+      <linearGradient id="dgwood" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#e6c486"/><stop offset="1" stop-color="#cfa15e"/></linearGradient>
+    </defs>`;
+    s+=`<rect width="${S}" height="${S}" rx="10" fill="url(#dgwood)"/>`;
+    s+=`<g stroke="#3a2a17" stroke-width="1.3" stroke-linecap="round">`;
+    for(let i=0;i<g;i++){const t=P(i);
+      s+=`<line x1="${P(0)}" y1="${t}" x2="${P(g-1)}" y2="${t}"/>`;
+      s+=`<line x1="${t}" y1="${P(0)}" x2="${t}" y2="${P(g-1)}"/>`;}
+    s+=`</g>`;
+    // 강조선(단일 또는 다중) — 돌 아래에 그린다
+    const drawLine=([r1,c1,r2,c2])=>`<line x1="${P(c1)}" y1="${P(r1)}" x2="${P(c2)}" y2="${P(r2)}" stroke="rgba(232,201,138,.85)" stroke-width="${R*1.4}" stroke-linecap="round"/>`;
+    if(spec.line)  s+=drawLine(spec.line);
+    if(spec.lines) spec.lines.forEach(l=>s+=drawLine(l));
+    // 돌 (label 있으면 수순/숫자를 새긴다)
+    const stone=(r,c,f,isB,label)=>{
+      let o=`<circle cx="${P(c)}" cy="${P(r)}" r="${R}" fill="${f}" stroke="rgba(0,0,0,.28)" stroke-width="0.7"/>`
+        +`<ellipse cx="${P(c)-R*0.28}" cy="${P(r)-R*0.33}" rx="${R*0.34}" ry="${R*0.23}" fill="rgba(255,255,255,.5)"/>`;
+      if(label!=null) o+=`<text x="${P(c)}" y="${P(r)+R*0.05}" fill="${isB?'#f0e6d2':'#241a0e'}" font-size="${R*0.92}" text-anchor="middle" dominant-baseline="central" font-family="Cormorant Garamond,serif" font-weight="700">${label}</text>`;
+      return o;
+    };
+    (spec.white||[]).forEach(([r,c,l])=>s+=stone(r,c,'url(#dgw)',false,l));
+    (spec.black||[]).forEach(([r,c,l])=>s+=stone(r,c,'url(#dgb)',true,l));
+    // 표식: key(금테)·win(금테+기호)·danger(적색)·good(녹색)·spot(작은 점)
+    (spec.mark||[]).forEach(([r,c,type,label])=>{
+      if(type==='spot'){ s+=`<circle cx="${P(c)}" cy="${P(r)}" r="${R*0.3}" fill="#d8ac4e"/>`; return; }
+      const col=type==='danger'?'#e85b4a':type==='good'?'#62c07d':'#e0b658';
+      s+=`<circle cx="${P(c)}" cy="${P(r)}" r="${R*0.84}" fill="rgba(0,0,0,.1)" stroke="${col}" stroke-width="2.6"/>`;
+      if(label)s+=`<text x="${P(c)}" y="${P(r)+R*0.05}" fill="${col}" font-size="${R*0.95}" text-anchor="middle" dominant-baseline="central" font-family="Cormorant Garamond,serif" font-weight="700">${label}</text>`;
+    });
+    return s+`</svg>`;
+  }
+
+  const CURRICULUM = {
+    basic:{
+      intro:'<span class="step">Level 1 · 기초</span><br>오목은 규칙이 단순하지만 깊이는 끝이 없습니다. 먼저 <b>판과 돌, 그리고 “다섯을 잇는다”</b>는 단 하나의 목표를 익히고, 같은 줄이라도 ‘열림’과 ‘막힘’이 왜 다른지까지 감을 잡아 봅시다.',
+      lessons:[
+        {title:'오목이란 — 승리 조건', tag:'규칙',
+         d:{black:[[4,2],[4,3],[4,4],[4,5],[4,6]], line:[4,2,4,6]},
+         body:'오목(五目)은 <b>가로·세로·대각선 어느 방향이든 자신의 돌 다섯 개를 한 줄로 먼저 잇는 사람</b>이 이기는 게임입니다. 규칙은 이 한 줄이면 끝이지만, 그 줄을 만들기 위한 공격과 막기 위한 수비의 ‘수읽기’에서 실력이 갈립니다.',
+         tip:'<b>Tip</b>이 게임은 15×15 줄(가로·세로 각 15선)의 정식 오목판을 사용합니다.'},
+        {title:'바둑판과 천원(天元)', tag:'판 읽기',
+         d:{black:[[4,4]], mark:[[4,4,'key'],[2,2,'spot'],[2,6,'spot'],[6,2,'spot'],[6,6,'spot']]},
+         body:'돌은 칸 안이 아니라 <b>가로선과 세로선이 만나는 ‘교차점’</b>에 놓습니다. 판 정중앙의 점을 <b>천원(天元)</b>이라 하며, 사방으로 뻗을 길이 가장 넓어 첫 수의 거점이 됩니다. 굵은 점(화점)은 위치를 가늠하는 기준점입니다.',
+         tip:'<b>Tip</b>흑은 보통 천원이나 그 부근에서 시작합니다.'},
+        {title:'순서 — 누가 먼저, 어떻게', tag:'진행',
+         d:{black:[[4,4,'1'],[3,5,'3'],[5,3,'5']], white:[[5,4,'2'],[3,4,'4']]},
+         body:'<b>흑이 먼저</b> 한 수를 두고, 이후 흑·백이 <b>번갈아 한 번씩</b> 둡니다(①흑 ②백 ③흑 …). 한 번 놓은 돌은 끝까지 움직이지 않으며, 빈 교차점이면 어디든 둘 수 있습니다.',
+         tip:'<b>Tip</b>먼저 두는 흑이 유리해, 정식 경기(렌주)에서는 흑에게만 금지수를 두어 균형을 맞춥니다.'},
+        {title:'다섯 방향과 돌의 연결', tag:'기초 개념',
+         d:{black:[[4,4],[4,5],[5,4],[5,5],[3,5]]},
+         body:'다섯을 잇는 방향은 <b>가로 · 세로 · ↘대각 · ↗대각</b> 네 가지입니다. 돌을 둘 때는 항상 이 네 방향으로 <b>내 줄이 얼마나 자라는지</b>, 동시에 <b>상대 줄을 얼마나 끊는지</b>를 함께 봅니다.',
+         tip:'<b>Tip</b>좋은 한 수는 대개 공격과 수비를 한꺼번에 해냅니다.'},
+        {title:'열림 vs 막힘 — 가치의 차이', tag:'기초 전술',
+         d:{black:[[4,3],[4,4],[4,5]], white:[[4,6]], mark:[[4,2,'good']]},
+         body:'같은 3목이라도 <b>양끝이 열렸는지, 한쪽이 막혔는지</b>에 따라 가치는 하늘과 땅 차이입니다. 열린 쪽(초록)으로는 더 긴 줄로 자라지만, 막힌 쪽(흰 돌)으로는 길이 끊깁니다. 이 ‘열림/막힘’ 감각이 모든 전술의 출발점입니다.',
+         tip:'<b>Tip</b>다음 단계에서 이 차이를 ‘활삼’과 ‘멍삼’으로 정확히 구분합니다.'},
+      ],
+    },
+    mid:{
+      intro:'<span class="step">Level 2 · 중급</span><br>공격과 수비의 기본 <b>형(形)</b>을 익힐 차례입니다. 2·3·4의 모양, ‘열림/막힘’, 그리고 주도권을 가르는 <b>선수·후수</b>의 개념이 핵심입니다. 여기까지만 익혀도 친구와의 대국에서 좀처럼 지지 않습니다.',
+      lessons:[
+        {title:'둘(2)의 가치 — 열린 2', tag:'공격',
+         d:{black:[[4,3],[4,4]], mark:[[4,2,'good'],[4,5,'good']]},
+         body:'나란한 두 점도 <b>양끝이 열린 ‘열린 2’</b>면 다음에 활삼으로 자라는 좋은 씨앗입니다. 초반에 이런 열린 2를 여러 갈래로 깔아 두면 공격의 선택지가 늘어 상대가 막기 벅차집니다.',
+         tip:'<b>Tip</b>한쪽이 막힌 2는 위협이 약해 서둘러 막을 필요가 없습니다.'},
+        {title:'활삼 vs 멍삼', tag:'핵심 형',
+         d:{black:[[2,3],[2,4],[2,5],[6,3],[6,4],[6,5]], white:[[6,2]],
+            mark:[[2,2,'key'],[2,6,'key'],[6,6,'spot']]},
+         body:'윗줄처럼 <b>양끝이 열린 3은 활삼(活三)</b> — 막지 않으면 다음 수에 ‘활사’가 되어 곧장 승부가 납니다. 아랫줄처럼 <b>한쪽이 막힌 3은 멍삼(닫힌 3)</b> — 한 방향으로만 자라 위협이 약합니다.',
+         tip:'<b>Tip</b>상대의 활삼은 즉시 받고, 멍삼은 급하지 않습니다. 이 구별이 중급의 시작입니다.'},
+        {title:'사(4) — 활사와 단사', tag:'핵심 형',
+         d:{black:[[2,2],[2,3],[2,4],[2,5],[6,2],[6,3],[6,4],[6,5]], white:[[6,1]],
+            mark:[[2,1,'win','◎'],[2,6,'win','◎'],[6,6,'win','◎']]},
+         body:'4목은 다음 한 수로 5를 만드는 직접 위협입니다. 윗줄의 <b>활사(열린 4)는 5목 자리가 둘이라 절대 막을 수 없는 필승형</b>이고, 아랫줄의 <b>단사(닫힌 4)는 그 한 곳만 막으면</b> 됩니다.',
+         tip:'<b>Tip</b>단사는 막혀도 상대를 ‘받게 만드는 선수’라, 시간을 벌며 다른 곳을 보강하는 데 씁니다.'},
+        {title:'선수와 후수 — 주도권', tag:'운영',
+         d:{black:[[4,2],[4,3],[4,4],[4,5]], white:[[4,6]], mark:[[4,1,'win','◎']]},
+         body:'<b>상대가 반드시 받아야 하는 수</b>를 두는 쪽이 ‘선수’, 받기만 하는 쪽이 ‘후수’입니다. 선수를 쥔 사람은 위협을 던지는 사이 자기 모양을 키우고, 후수에 몰린 사람은 방어만 하다 무너집니다. 오목의 운영은 곧 <b>선수 싸움</b>입니다.',
+         tip:'<b>Tip</b>4(사)와 활삼이 대표적 선수 — 이걸 끊기지 않게 잇는 것이 고급의 연속 공격입니다.'},
+        {title:'받는 법 — 활삼 막기', tag:'수비',
+         d:{white:[[4,3],[4,4],[4,5]], mark:[[4,2,'danger'],[4,6,'danger']]},
+         body:'상대(흰 돌)의 활삼을 받을 때는 보통 <b>열린 두 끝 중 한쪽</b>에 둡니다. 그러면 활사로 자라는 길이 막혀 멍삼으로 가치가 떨어집니다. 그 막는 수가 <b>동시에 내 모양도 키우는 자리</b>라면 더할 나위 없습니다.',
+         tip:'<b>Tip</b>막는 수 하나로 ‘방어 + 내 활삼’을 겸하면, 후수가 선수로 뒤집힙니다.'},
+        {title:'띈 모양(도약형)', tag:'함정',
+         d:{black:[[4,2],[4,3],[4,5]], mark:[[4,4,'win','◎']]},
+         body:'한 칸 띄운 모양(○○_○)도 가운데를 채우면 4가 되는 <b>강한 형</b>입니다. 붙은 모양보다 눈에 덜 띄어 상대의 허를 찌르기 좋지만, 그만큼 <b>상대의 띈 모양도 놓치지 않도록</b> 살펴야 합니다.',
+         tip:'<b>Tip</b>‘띈 4’는 가운데 한 점이 곧 5목 자리 — 매 수 반드시 점검하세요.'},
+      ],
+    },
+    adv:{
+      intro:'<span class="step">Level 3 · 고급</span><br>한 수로 <b>두 개의 위협</b>을 만드는 복합 전술과, 그것을 연결해 외통으로 모는 <b>수읽기</b>를 다룹니다. 여기서부터가 실전 승부의 핵심 — 상대가 다 막은 줄 알았는데 지는 이유가 바로 여기에 있습니다.',
+      lessons:[
+        {title:'쌍삼 (삼삼) — 한 수 두 위협', tag:'복합 위협',
+         d:{black:[[4,2],[4,3],[2,4],[3,4]], lines:[[4,2,4,4],[2,4,4,4]], mark:[[4,4,'win','✦']]},
+         body:'✦ 한 곳에 두면 <b>가로·세로로 활삼이 동시에 두 개</b> 생깁니다. 상대는 한 번에 한 곳밖에 막지 못하므로, 막히지 않은 활삼이 활사→5로 이어져 <b>승리</b>합니다. 가로·세로·대각이 교차하는 점에 두 줄이 동시에 서도록 배치하는 것이 요령입니다.',
+         tip:'<b>Tip</b>정식 렌주에서 흑의 쌍삼(33)은 금지수입니다(‘금수’ 강의 참고). 백은 제한이 없습니다.'},
+        {title:'사삼 (4·3) — 막아도 진다', tag:'복합 위협',
+         d:{black:[[4,2],[4,3],[4,4],[2,5],[3,5]], white:[[4,1]], lines:[[4,2,4,5],[2,5,4,5]], mark:[[4,5,'win','✦']]},
+         body:'✦에 두면 <b>4(상대가 반드시 막아야 함)와 활삼을 한 수에 동시에</b> 만듭니다. 상대가 4를 막는 사이 남은 활삼을 4로 키워 다음에 5를 완성합니다. <b>막아도 지는</b> 대표적 필승형입니다.',
+         tip:'<b>Tip</b>4·3은 렌주에서도 흑에게 허용되는 합법 필승형 — 실전 마무리로 가장 자주 노립니다.'},
+        {title:'쌍사 (4·4)', tag:'복합 위협',
+         d:{black:[[4,1],[4,2],[4,3],[1,4],[2,4],[3,4]], lines:[[4,1,4,4],[1,4,4,4]], mark:[[4,4,'win','✦']]},
+         body:'한 수로 <b>4를 두 개</b> 만드는 쌍사입니다. 상대가 한쪽 4를 막아도 다른 4가 그대로 5목이 되어 이깁니다. 쌍삼보다 강력하지만 모양을 만들기는 더 까다롭습니다.',
+         tip:'<b>Tip</b>흑의 쌍사(44)도 렌주에서는 금지수입니다.'},
+        {title:'연속 공격 (VCF)', tag:'수읽기',
+         d:{black:[[3,2],[3,3],[3,4],[3,5],[6,3],[6,4],[6,5],[6,6]], white:[[3,1],[6,7]],
+            mark:[[3,6,'win','◎'],[6,2,'win','◎']]},
+         body:'<b>4(사)를 연달아 던지면 상대는 매번 받을 수밖에 없습니다.</b> 이렇게 강제로 응수를 받아내며 마지막에 ‘막을 수 없는 모양’으로 모는 것이 <b>연속 공격(VCF)</b>입니다. 위 그림처럼 받을 수 없는 4가 둘 이상 생기면 그대로 외통 — 고수의 마무리는 대부분 이 수읽기에서 나옵니다.',
+         tip:'<b>Tip</b>공격 전에 “내 4·활삼이 끊기지 않고 이어지는가?”를 머릿속으로 끝까지 세어 보세요.'},
+        {title:'포석 — 이기는 밑그림', tag:'운영',
+         d:{black:[[4,4],[3,4],[5,5]], white:[[5,4],[4,5]], mark:[[3,3,'good'],[6,6,'good'],[2,5,'good']]},
+         body:'초반 포석에서는 한 줄에 욕심내 붙이기보다, 천원 부근에 <b>여러 방향으로 갈래를 가진 ‘열린 2’</b>를 깔아 둡니다. 그러면 중반에 어디로든 활삼·복합 위협으로 전환할 수 있어 상대가 감당하기 어렵습니다. 좋은 포석은 ‘아직 위협은 아니지만 곧 위협이 될’ 잠재력을 쌓는 일입니다.',
+         tip:'<b>Tip</b>너무 붙이면 막기 쉽고 너무 벌리면 끊깁니다 — 한 칸·대각 간격의 균형이 좋습니다.'},
+        {title:'렌주 금수 (심화)', tag:'규칙 심화',
+         d:{black:[[4,2],[4,3],[2,4],[3,4]], mark:[[4,4,'danger','✕']]},
+         body:'먼저 두는 흑이 너무 유리하기에, 정식 렌주는 <b>흑에게만 세 가지 금지수</b>를 둡니다 — <b>33</b>(활삼 둘 동시), <b>44</b>(4 둘 동시), 그리고 <b>장목</b>(6목 이상). 흑이 이 자리에 두면 즉시 반칙패입니다. 백은 제한이 없어 오히려 33·44로 이길 수 있습니다.',
+         tip:'<b>Tip</b>이 게임은 즐기기 편하도록 금수를 적용하지 않습니다. 흑일 때 33·44·장목을 스스로 피해 두면 한 단계 높은 수읽기 훈련이 됩니다.'},
+      ],
+    },
+  };
+
+  const GLOSSARY = [
+    ['천원(天元)','바둑판 <em>정중앙</em>의 점. 사방이 열려 첫 수의 거점이 된다.'],
+    ['화점','위치의 기준이 되는 굵은 점.'],
+    ['착수','빈 교차점에 돌을 놓는 행위.'],
+    ['선수(先手)','상대가 <em>반드시 받아야</em> 하는 수. 주도권을 쥔 상태.'],
+    ['후수(後手)','상대 위협에 응수만 하는 처지.'],
+    ['활삼(活三)','양끝이 열린 3. 막지 않으면 <em>활사</em>로 자란다.'],
+    ['멍삼(닫힌 3)','한쪽이 막힌 3. 위협이 약해 급하지 않다.'],
+    ['활사(活四)','양끝이 열린 4. 5 자리가 둘이라 <em>막을 수 없는 필승형</em>.'],
+    ['단사(닫힌 4)','한쪽이 막힌 4. 한 곳만 막으면 되지만 선수가 된다.'],
+    ['삼삼(쌍삼·33)','한 수로 활삼 둘. 흑은 <em>금수</em>.'],
+    ['사삼(4·3)','한 수로 4와 활삼. 막아도 지는 필승형.'],
+    ['사사(쌍사·44)','한 수로 4 둘. 흑은 <em>금수</em>.'],
+    ['장목(장곤)','6목 이상으로 늘어선 줄. 렌주의 흑은 금수, 캐주얼은 승리.'],
+    ['금수','렌주에서 흑이 둘 수 없는 자리(33·44·장목).'],
+    ['띈수(도약형)','한 칸 띄운 모양(○○_○). 알아채기 어려운 강한 형.'],
+    ['VCF','연속된 4(사)로 상대를 <em>외통</em>으로 모는 필승 수순.'],
+    ['받음수','상대 위협을 막는 수.'],
+    ['포석','초반에 돌을 배치해 구도를 짜는 일.'],
+    ['외통','어떤 수로도 패배를 막을 수 없는 상태.'],
+  ];
+
+  function renderLessons(tab){
+    const body=document.getElementById('school-body');
+    if(tab==='terms'){
+      body.innerHTML =
+        `<div class="school-intro"><span class="step">Reference · 용어 사전</span><br>강의와 실전에서 자주 쓰는 핵심 용어들입니다. 모양과 함께 익혀 두면 수읽기가 한결 빨라집니다.</div>`+
+        `<div class="glossary">`+ GLOSSARY.map(([t,d])=>`<div class="term"><strong>${t}</strong><span>${d}</span></div>`).join('') +`</div>`;
+      body.scrollTop=0; return;
+    }
+    const sec=CURRICULUM[tab];
+    body.innerHTML = `<div class="school-intro">${sec.intro}</div>` + sec.lessons.map(L=>`
+      <div class="lesson">
+        ${diagram(L.d)}
+        <div class="lesson-txt">
+          <h4>${L.title}<span class="tag">${L.tag}</span></h4>
+          <p>${L.body}</p>
+          ${L.tip?`<div class="lesson-tip">${L.tip}</div>`:''}
+        </div>
+      </div>`).join('');
+    body.scrollTop=0;
+  }
+
+  const school=document.getElementById('school');
+  function openSchool(){ renderLessons('basic');
+    document.querySelectorAll('#school-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t==='basic'));
+    school.classList.add('show'); }
+  function closeSchool(){ school.classList.remove('show'); }
+  document.getElementById('btn-school').addEventListener('click', openSchool);
+  document.getElementById('school-close').addEventListener('click', closeSchool);
+  school.addEventListener('click', e=>{ if(e.target===school) closeSchool(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSchool(); });
+  document.getElementById('school-tabs').addEventListener('click', e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#school-tabs button').forEach(x=>x.classList.toggle('on',x===b));
+    renderLessons(b.dataset.t);
+  });
+
+  // 초기화
+  updateTurn(); updateStats();
+})();
+</script>
+</body>
+</html>
