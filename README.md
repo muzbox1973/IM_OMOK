@@ -47,3 +47,8 @@
 
 - 유튜브: [@AIFACT-GPTPARK](https://www.youtube.com/@AIFACT-GPTPARK)
 - 공식 사이트: [gptparkai.com](https://gptparkai.com/)
+
+## 라이선스
+
+퍼블릭 도메인(CC0 1.0)입니다. 누구나 목적에 관계없이 자유롭게 사용·수정·배포·판매할 수 있으며,
+개발자 표기나 출처 고지, 허락 요청이 필요하지 않습니다. 자세한 내용은 [LICENSE](LICENSE)를 참고하세요.
